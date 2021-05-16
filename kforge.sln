@@ -1,0 +1,44 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kforge_driver", "kforge_driver\kforge_driver.vcxproj", "{9244F175-9960-47FB-A197-F717D5C2C370}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kforge_library", "kforge_library\kforge_library.vcxproj", "{01DA4344-6C0C-4692-9542-D2E895AA4AFB}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kforge_example", "kforge_example\kforge_example.vcxproj", "{FD13CD14-B412-45BD-A3C9-7466CD83CAFC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{01DA4344-6C0C-4692-9542-D2E895AA4AFB} = {01DA4344-6C0C-4692-9542-D2E895AA4AFB}
+		{9244F175-9960-47FB-A197-F717D5C2C370} = {9244F175-9960-47FB-A197-F717D5C2C370}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dummy", "dummy\dummy.vcxproj", "{60067986-A909-433D-9699-0E00FE13E16E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9244F175-9960-47FB-A197-F717D5C2C370}.Debug|x64.ActiveCfg = Debug|x64
+		{9244F175-9960-47FB-A197-F717D5C2C370}.Debug|x64.Build.0 = Debug|x64
+		{9244F175-9960-47FB-A197-F717D5C2C370}.Release|x64.ActiveCfg = Release|x64
+		{9244F175-9960-47FB-A197-F717D5C2C370}.Release|x64.Build.0 = Release|x64
+		{01DA4344-6C0C-4692-9542-D2E895AA4AFB}.Debug|x64.ActiveCfg = Debug|x64
+		{01DA4344-6C0C-4692-9542-D2E895AA4AFB}.Debug|x64.Build.0 = Debug|x64
+		{01DA4344-6C0C-4692-9542-D2E895AA4AFB}.Release|x64.ActiveCfg = Release|x64
+		{01DA4344-6C0C-4692-9542-D2E895AA4AFB}.Release|x64.Build.0 = Release|x64
+		{FD13CD14-B412-45BD-A3C9-7466CD83CAFC}.Debug|x64.ActiveCfg = Debug|x64
+		{FD13CD14-B412-45BD-A3C9-7466CD83CAFC}.Debug|x64.Build.0 = Debug|x64
+		{FD13CD14-B412-45BD-A3C9-7466CD83CAFC}.Release|x64.ActiveCfg = Release|x64
+		{FD13CD14-B412-45BD-A3C9-7466CD83CAFC}.Release|x64.Build.0 = Release|x64
+		{60067986-A909-433D-9699-0E00FE13E16E}.Debug|x64.ActiveCfg = Debug|x64
+		{60067986-A909-433D-9699-0E00FE13E16E}.Debug|x64.Build.0 = Debug|x64
+		{60067986-A909-433D-9699-0E00FE13E16E}.Release|x64.ActiveCfg = Release|x64
+		{60067986-A909-433D-9699-0E00FE13E16E}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
