@@ -440,7 +440,7 @@ static DWORD WINAPI DummyThread(LPVOID lpParam)
     return 0;
 }
 
-BOOL KfCall(PVOID FuncAddr, PVOID *Args, DWORD dwArgsCount, PVOID *pRetVal)
+BOOL KfCallAddr(PVOID FuncAddr, PVOID *Args, DWORD dwArgsCount, PVOID *pRetVal)
 {
     BOOL bRet = FALSE;    
     HANDLE hThread = NULL, hEvent = NULL;       
@@ -705,7 +705,7 @@ BOOL KfCall(char *lpszName, PVOID *Args, DWORD dwArgsCount, PVOID *pRetVal)
     DbgMsg(__FILE__, __LINE__, "nt!%s() is at "IFMT"\n", lpszName, FuncAddr);
 
     // perform the call
-    return KfCall(FuncAddr, Args, dwArgsCount, pRetVal);
+    return KfCallAddr(FuncAddr, Args, dwArgsCount, pRetVal);
 }
 //--------------------------------------------------------------------------------------
 PVOID KfMemCopy(PVOID Dst, PVOID Src, DWORD Size)
@@ -722,7 +722,7 @@ PVOID KfMemCopy(PVOID Dst, PVOID Src, DWORD Size)
     return NULL;
 }
 //--------------------------------------------------------------------------------------
-PVOID KfHeapAlloc(DWORD Size, PVOID Data)
+PVOID KfHeapAllocData(DWORD Size, PVOID Data)
 {
     PVOID Ret = NULL;
     PVOID Args[] = { KF_ARG(NonPagedPool), KF_ARG(Size) };
@@ -744,7 +744,7 @@ PVOID KfHeapAlloc(DWORD Size, PVOID Data)
 
 PVOID KfHeapAlloc(DWORD Size)
 {
-    return KfHeapAlloc(Size, NULL);
+    return KfHeapAllocData(Size, NULL);
 }
 //--------------------------------------------------------------------------------------
 BOOL KfHeapFree(PVOID Addr)
