@@ -76,7 +76,7 @@ fffff205`b0bfaa80 00007ffc`f882c6a4 nt!KiSystemServiceCopyEnd+0x25 (TrapFrame @ 
 
  5. Then Kernel Forge constructs ROP chain to call desired kernel function with specified arguments, save its return value into the user mode memory and pass execution to `nt!ZwTerminateThread()` for graceful shutdown of the dummy thread after the ROP chain execution. Arbitrary memory write primitive is used to overwrite previously located return address with an address of the first ROP gadget:
 
- &nbsp;&nbsp;&nbsp;&nbsp;<img src="https://raw.githubusercontent.com/Cr4sh/KernelForge/master/docs/images/rop_gadget.png" width="636" />
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://raw.githubusercontent.com/Cr4sh/KernelForge/master/docs/images/rop_gadget.png" width="636" />
 
  6. And finally, Kernel Forge main thread sets event object to signaled state which resumes dummy thread and triggers ROP chain execution.
 
