@@ -342,7 +342,7 @@ For more complete example please refer to the `kforge_example.exe` <a href="http
 
 ## Interfacing Secure Kernel with Kernel Forge
 
-On VBS/HVCI enabled machines Hyper-V functionality is employed to logically divide the system into two separate "worlds": the normal world (VTL0) running the NT kernel that we’re all familiar with and a separate secure world (VTL1) running a Secure Kernel (SK). To learn more about VBS/HVCI internals I recommend you the following materials:
+On VBS/HVCI enabled machines Hyper-V functionality is employed to logically divide the system into the two separate "worlds": normal world (VTL0) running the NT kernel that we’re all familiar with and isolated secure world (VTL1) running a Secure Kernel (SK). To learn more about VBS/HVCI internals I recommend you the following materials:
 
  * [Battle Of The SKM And IUM: How Windows 10 Rewrites OS Architecture](https://www.youtube.com/watch?v=LqaWIn4y26E) by [Alex Ionescu](https://twitter.com/aionescu)
 
