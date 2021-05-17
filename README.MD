@@ -186,7 +186,7 @@ PVOID KfGetKernelZwProcAddress(char *lpszProcName);
  * @param Size Number of bytes to allocate.
  * @return Kernel address of allocated memory or NULL in case of error.
  */
-PVOID KfHeapAlloc(DWORD Size);
+PVOID KfHeapAlloc(SIZE_T Size);
 ```
 
 ```C++
@@ -199,7 +199,7 @@ PVOID KfHeapAlloc(DWORD Size);
  * @param Data Data to copy into the allocated memory.
  * @return Kernel address of allocated memory or NULL in case of error.
  */
-PVOID KfHeapAllocData(DWORD Size, PVOID Data);
+PVOID KfHeapAllocData(SIZE_T Size, PVOID Data);
 ```
 
 ```C++
@@ -222,7 +222,7 @@ void KfHeapFree(PVOID Addr);
  * @param Size Number of bytes to copy.
  * @return Destination memory address if success or NULL in case of error.
  */
-PVOID KfMemCopy(PVOID Dst, PVOID Src, DWORD Size);
+PVOID KfMemCopy(PVOID Dst, PVOID Src, SIZE_T Size);
 ```
 
 To use Kernel Forge with your own loldriver or kernel exploit you just need to implement a custom version of `kforge_driver.lib` library <a href="https://github.com/Cr4sh/KernelForge/blob/master/include/kforge_driver.h">with fairly simple program interface</a>.

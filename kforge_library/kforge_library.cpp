@@ -707,7 +707,7 @@ BOOL KfCall(char *lpszProcName, PVOID *Args, DWORD dwArgsCount, PVOID *pRetVal)
     return KfCallAddr(FuncAddr, Args, dwArgsCount, pRetVal);
 }
 //--------------------------------------------------------------------------------------
-PVOID KfMemCopy(PVOID Dst, PVOID Src, DWORD Size)
+PVOID KfMemCopy(PVOID Dst, PVOID Src, SIZE_T Size)
 {
     PVOID Ret = NULL;
     PVOID Args[] = { KF_ARG(Dst), KF_ARG(Src), KF_ARG(Size) };
@@ -721,7 +721,7 @@ PVOID KfMemCopy(PVOID Dst, PVOID Src, DWORD Size)
     return NULL;
 }
 //--------------------------------------------------------------------------------------
-PVOID KfHeapAllocData(DWORD Size, PVOID Data)
+PVOID KfHeapAllocData(SIZE_T Size, PVOID Data)
 {
     PVOID Ret = NULL;
     PVOID Args[] = { KF_ARG(NonPagedPool), KF_ARG(Size) };
@@ -741,7 +741,7 @@ PVOID KfHeapAllocData(DWORD Size, PVOID Data)
     return NULL;
 }
 
-PVOID KfHeapAlloc(DWORD Size)
+PVOID KfHeapAlloc(SIZE_T Size)
 {
     return KfHeapAllocData(Size, NULL);
 }

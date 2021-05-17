@@ -88,7 +88,7 @@ PVOID KfGetKernelZwProcAddress(char *lpszProcName);
  * @param Size Number of bytes to allocate.
  * @return Kernel address of allocated memory or NULL in case of error.
  */
-PVOID KfHeapAlloc(DWORD Size);
+PVOID KfHeapAlloc(SIZE_T Size);
 
 /**
  * Wrapper that uses KfCall() to execute nt!ExAllocatePool() function to allocate
@@ -99,7 +99,7 @@ PVOID KfHeapAlloc(DWORD Size);
  * @param Data Data to copy into the allocated memory.
  * @return Kernel address of allocated memory or NULL in case of error.
  */
-PVOID KfHeapAllocData(DWORD Size, PVOID Data);
+PVOID KfHeapAllocData(SIZE_T Size, PVOID Data);
 
 /**
  * Wrapper that uses KfCall() to execute nt!ExFreePool() function to free the memory
@@ -118,7 +118,7 @@ void KfHeapFree(PVOID Addr);
  * @param Size Number of bytes to copy.
  * @return Destination memory address if success or NULL in case of error.
  */
-PVOID KfMemCopy(PVOID Dst, PVOID Src, DWORD Size);
+PVOID KfMemCopy(PVOID Dst, PVOID Src, SIZE_T Size);
 
 #ifdef __cplusplus
 
