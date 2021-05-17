@@ -39,7 +39,9 @@ Kernel Forge code base consists from the following files:
 
  * `include/kforge_library.h` &minus; `kforge_library.lib` program interface.
 
- * `kforge_example/` &minus; An example program that uses `kforge_library.lib` to perform <a href="https://github.com/Cr4sh/s6_pcie_microblaze/blob/c13c744ddbc5b3e8dd89dde03ceaa3c7d0240f8e/python/payloads/DmaBackdoorHv/backdoor_client/vm_exec_kernel/vm_exec_kernel.cpp#L185">a classical</a> kernel mode to user mode DLL injection.
+ * `kforge_example/` &minus; An example program that uses `kforge_library.lib` to perform <a href="https://github.com/Cr4sh/s6_pcie_microblaze/blob/c13c744ddbc5b3e8dd89dde03ceaa3c7d0240f8e/python/payloads/DmaBackdoorHv/backdoor_client/vm_exec_kernel/vm_exec_kernel.cpp#L185">a classical</a> kernel mode to user mode DLL injection attack.
+
+ * `dll_inject_shellcode.cpp`/`dll_inject_shellcode.h` &minus; A shellcode used by `kforge_example.exe` to handle injected DLL image imports and do other things.
 
  * `dummy/` &minus; Dummy DLL project to use with `kforge_example.exe` that shows message box after its injection into some process.
 
@@ -72,7 +74,9 @@ fffff205`b0bfaa80 00007ffc`f882c6a4 nt!KiSystemServiceCopyEnd+0x25 (TrapFrame @ 
 
  4. Arbitrary memory read primitive is used to traverse dummy thread kernel stack starting from its bottom to locate return address from `nt!NtWaitForSingleObject()` back to the `nt!KiSystemServiceCopyEnd()`. 
 
- 5. Then Kernel Forge constructs ROP chain to call desired kernel function with specified arguments, save its return value into the user mode memory and pass execution to `nt!ZwTerminateThread()` for graceful shutdown of the dummy thread after the ROP chain execution. Arbitrary memory write primitive is used to overwrite previously located return address with an address of the first ROP gadget.
+ 5. Then Kernel Forge constructs ROP chain to call desired kernel function with specified arguments, save its return value into the user mode memory and pass execution to `nt!ZwTerminateThread()` for graceful shutdown of the dummy thread after the ROP chain execution. Arbitrary memory write primitive is used to overwrite previously located return address with an address of the first ROP gadget:
+
+ <img src="https://raw.githubusercontent.com/Cr4sh/KernelForge/master/docs/images/rop_gadget.png" width="636" />
 
  6. And finally, Kernel Forge main thread sets event object to signaled state which resumes dummy thread and triggers ROP chain execution.
 
