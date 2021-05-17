@@ -492,8 +492,6 @@ BOOL KfCallAddr(PVOID ProcAddr, PVOID *Args, DWORD dwArgsCount, PVOID *pRetVal)
         SwitchToThread();
     }
 
-    DebugBreak();
-
     // get _KTHREAD address by handle
     PVOID pThread = GetObjectAddress(hThread);
     if (pThread == NULL)

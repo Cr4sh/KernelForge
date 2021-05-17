@@ -18,7 +18,7 @@ extern "C"
 #endif
 
 /**
- * Initiaize Kernel Forge library: reads kernel image into the user mode memory,
+ * Initialize Kernel Forge library: reads kernel image into the user mode memory,
  * finds needed ROP gadgets, etc, etc.
  *
  * @return TRUE if success or FALSE in case of error.
@@ -26,7 +26,7 @@ extern "C"
 BOOL KfInit(void);
 
 /**
- * Uninitiaize Kernel Forge library when you don't need to use its API anymore.
+ * Uninitialize Kernel Forge library when you don't need to use its API anymore.
  *
  * @return TRUE if success and FALSE in case of error.
  */
@@ -82,7 +82,7 @@ PVOID KfGetKernelProcAddress(char *lpszProcName);
 PVOID KfGetKernelZwProcAddress(char *lpszProcName);
 
 /**
- * Warapper that uses KfCall() to call nt!ExAllocatePool() function to allocate
+ * Wrapper that uses KfCall() to execute nt!ExAllocatePool() function to allocate
  * specified amount of non paged kernel heap memory.
  *
  * @param Size Number of bytes to allocate.
@@ -91,7 +91,7 @@ PVOID KfGetKernelZwProcAddress(char *lpszProcName);
 PVOID KfHeapAlloc(DWORD Size);
 
 /**
- * Warapper that uses KfCall() to call nt!ExAllocatePool() function to allocate
+ * Wrapper that uses KfCall() to execute nt!ExAllocatePool() function to allocate
  * specified amount of non paged kernel heap memory and copy spcified data from
  * the user mode into the allocated memory.
  *
@@ -102,7 +102,7 @@ PVOID KfHeapAlloc(DWORD Size);
 PVOID KfHeapAllocData(DWORD Size, PVOID Data);
 
 /**
- * Warapper that uses KfCall() to call nt!ExFreePool() function to free the memory
+ * Wrapper that uses KfCall() to execute nt!ExFreePool() function to free the memory
  * that was allocated by KfHeapAlloc() or KfHeapAllocData() functions.
  *
  * @param Addr Address of the memory to free.
@@ -110,7 +110,7 @@ PVOID KfHeapAllocData(DWORD Size, PVOID Data);
 void KfHeapFree(PVOID Addr);
 
 /**
- * Warapper that uses KfCall() to call nt!memcpy() function to copy arbitrary data
+ * Wrapper that uses KfCall() to execute nt!memcpy() function to copy arbitrary data
  * between kernel mode and user mode or vice versa.
  *
  * @param Dst Address of the destination memory.
