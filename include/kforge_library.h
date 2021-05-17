@@ -120,6 +120,17 @@ void KfHeapFree(PVOID Addr);
  */
 PVOID KfMemCopy(PVOID Dst, PVOID Src, SIZE_T Size);
 
+/**
+ * Wrapper that uses KfCall() to execute nt!memset() function to fill memory region
+ * with specified character.
+ *
+ * @param Dst Address of the destination memory.
+ * @param Val Character to fill.
+ * @param Size Number of bytes to fill.
+ * @return Destination memory address if success or NULL in case of error.
+ */
+PVOID KfMemSet(PVOID Dst, int Val, SIZE_T Size);
+
 #ifdef __cplusplus
 
 }

@@ -721,6 +721,20 @@ PVOID KfMemCopy(PVOID Dst, PVOID Src, SIZE_T Size)
     return NULL;
 }
 //--------------------------------------------------------------------------------------
+PVOID KfMemSet(PVOID Dst, int Val, SIZE_T Size)
+{
+    PVOID Ret = NULL;
+    PVOID Args[] = { KF_ARG(Dst), KF_ARG(Val), KF_ARG(Size) };
+
+    // perform memory fill operation
+    if (KfCall("memset", Args, 3, &Ret))
+    {
+        return Ret;
+    }
+
+    return NULL;
+}
+//--------------------------------------------------------------------------------------
 PVOID KfHeapAllocData(SIZE_T Size, PVOID Data)
 {
     PVOID Ret = NULL;

@@ -225,6 +225,19 @@ void KfHeapFree(PVOID Addr);
 PVOID KfMemCopy(PVOID Dst, PVOID Src, SIZE_T Size);
 ```
 
+```C++
+/**
+ * Wrapper that uses KfCall() to execute nt!memset() function to fill memory region
+ * with specified character.
+ *
+ * @param Dst Address of the destination memory.
+ * @param Val Character to fill.
+ * @param Size Number of bytes to fill.
+ * @return Destination memory address if success or NULL in case of error.
+ */
+PVOID KfMemSet(PVOID Dst, int Val, SIZE_T Size);
+```
+
 To use Kernel Forge with your own loldriver or kernel exploit you just need to implement a custom version of `kforge_driver.lib` library <a href="https://github.com/Cr4sh/KernelForge/blob/master/include/kforge_driver.h">with fairly simple program interface</a>.
 
 
