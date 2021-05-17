@@ -6,7 +6,7 @@
 [How does it work](#how-does-it-work)  
 [Kernel Forge API](#kernel-forge-api)  
 [Usage example](#usage-example)  
-[Interfacing Secure Kernel with Kernel Forge](Interfacing-secure-kernel-with-kernel-forge)  
+[Interfacing Secure Kernel with Kernel Forge](#interfacing-secure-kernel-with-kernel-forge)  
 
 ## General information
 
@@ -350,7 +350,7 @@ To communicate with Secure Kernel a regular NT kernel uses special VTL0 to VTL1 
 
 <img src="https://raw.githubusercontent.com/Cr4sh/KernelForge/master/docs/images/vtl_kernel_functions.png" width="720" />
 
-This set of `Vsl` functions exposes particularly interesting attack surface for fuzzing and exploitation of the VTL1 and Secure Kernel execution environment. Using Kernel Forge you can call this functions from user mode without use pf any complicated and not very convenient solutions <a href="https://github.com/Cr4sh/s6_pcie_microblaze/tree/master/python/payloads/DmaBackdoorHv">like my Hyper-V backdoor</a>. To interact with Secure Kernel using `Vsl` functions it will be more convenient to use `kforge.dll` from Python code with [ctypes library](https://docs.python.org/3/library/ctypes.html) as foreign functions interface and something like [pdbparse](https://github.com/moyix/pdbparse) to extract the addresses of not exported kernel functions from debug symbols.
+This set of `Vsl` functions exposes particularly interesting attack surface for fuzzing and exploitation of the VTL1 and Secure Kernel execution environment. Using Kernel Forge you can call this functions from user mode without use of any complicated and not very convenient solutions <a href="https://github.com/Cr4sh/s6_pcie_microblaze/tree/master/python/payloads/DmaBackdoorHv">like my Hyper-V backdoor</a>. To interact with Secure Kernel using `Vsl` functions it will be more convenient to use `kforge.dll` from Python code with [ctypes library](https://docs.python.org/3/library/ctypes.html) as foreign functions interface and something like [pdbparse](https://github.com/moyix/pdbparse) to extract the addresses of not exported kernel functions from debug symbols.
 
 
 ## TODO
