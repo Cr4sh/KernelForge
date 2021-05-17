@@ -1,7 +1,5 @@
 EXPORTS
 
-KfInit
-KfUninit
 KfCall
 KfCallAddr
 KfHeapAlloc
