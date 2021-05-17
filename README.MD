@@ -12,7 +12,7 @@
 
 Today <a href="https://www.microsoft.com/en-us/windowsforbusiness/windows10-secured-core-computers">more and more Windows machines</a> comes with VBS enabled which forces kernel exploits and rootkits developers to accept new challenges. [Windows Virtualization-based Security (VBS)](https://docs.microsoft.com/en-us/windows-hardware/design/device-experiences/oem-vbs) uses hardware virtualization features and Hyper-V to host a number of security services, providing them with greatly increased protection from vulnerabilities in the operating system, and preventing the use of malicious exploits which attempt to defeat protections. One of the examples of such services is [Hypervisor-Enforced Code Integrity (HVCI)](https://docs.microsoft.com/en-us/windows/security/threat-protection/device-guard/enable-virtualization-based-protection-of-code-integrity) which uses VBS to significantly strengthen code integrity policy enforcement.
 
- * **Q1:** On HVCI enabled target I can't execute arbitrary kernel code anymore even with my awesome local privileges escalation kernel exploit that gives powerful arbitrary memory read write primitives.  
+ * **Q1:** On HVCI enabled target I can't execute my own kernel code anymore even with most awesome local privileges escalation kernel exploit that gives powerful arbitrary memory read write primitives.  
 
  * **A1:** You can use data only attack to overwrite process token, gain Local System and load any <a href="https://github.com/hfiref0x/KDU#currently-supported-providers">legitimate 3-rd party WHQL signed driver</a> that provides an access to I/O ports, physical memory and MSR registers.  
 
@@ -20,7 +20,7 @@ Today <a href="https://www.microsoft.com/en-us/windowsforbusiness/windows10-secu
 
  * **A2:** That's why I made Kernel Forge library, it provides convenient API for this exact purpose.  
 
-Kernel Forge consists from two main components: <a href="https://github.com/Cr4sh/KernelForge/blob/master/kforge_library/kforge_library.cpp">the first library</a> implements main functionality required to call an arbitrary kernel functions and <a href="https://github.com/Cr4sh/KernelForge/blob/master/kforge_driver/kforge_driver.cpp">the second library</a> used to delegate arbitrary memory read write primitives: it can be local privileges escalation exploit or just some wrapper around 3-rd party WHQL signed loldriver. For this project I'm using `WinIo.sys` variation that provides full physical memory access and loads just fine even with HVCI enabled:
+Kernel Forge consists from two main components: <a href="https://github.com/Cr4sh/KernelForge/blob/master/kforge_library/kforge_library.cpp">the first library</a> implements main functionality required to call an arbitrary kernel functions and <a href="https://github.com/Cr4sh/KernelForge/blob/master/kforge_driver/kforge_driver.cpp">the second library</a> used to delegate arbitrary memory read write primitives: it can be local privileges escalation exploit or just some wrapper around 3-rd party WHQL signed loldriver. For this project I'm using `WinIo.sys` variation that provides full physical memory access and works just fine even with enabled HVCI:
 
 <img src="https://raw.githubusercontent.com/Cr4sh/KernelForge/master/docs/images/winio_signature.png" width="474" />
 
@@ -39,20 +39,20 @@ Kernel Forge code base consists from the following files:
 
  * `include/kforge_library.h` &minus; `kforge_library.lib` program interface.
 
- * `kforge_example/` &minus; An example program that uses `kforge_library.lib` to perform <a href="https://github.com/Cr4sh/s6_pcie_microblaze/blob/c13c744ddbc5b3e8dd89dde03ceaa3c7d0240f8e/python/payloads/DmaBackdoorHv/backdoor_client/vm_exec_kernel/vm_exec_kernel.cpp#L185">a classical</a> kernel mode to user mode DLL injection attack.
+ * `kforge_example/` &minus; An example program that uses `kforge_library.lib` API to perform <a href="https://github.com/Cr4sh/s6_pcie_microblaze/blob/c13c744ddbc5b3e8dd89dde03ceaa3c7d0240f8e/python/payloads/DmaBackdoorHv/backdoor_client/vm_exec_kernel/vm_exec_kernel.cpp#L185">a classical</a> kernel mode to user mode DLL injection attack.
 
- * `dll_inject_shellcode.cpp`/`dll_inject_shellcode.h` &minus; A shellcode used by `kforge_example.exe` to handle injected DLL image imports and do other things.
+ * `dll_inject_shellcode.cpp`/`dll_inject_shellcode.h` &minus; Shellcode used by `kforge_example.exe` to handle injected DLL image imports and do other things.
 
  * `dummy/` &minus; Dummy DLL project to use with `kforge_example.exe` that shows message box after its injection into some process.
 
 
 ## How does it work
 
-The idea behind Kernel Forge is very simple, there's no any innovative exploitation techniques, just common things already known by many people but in more convenient form of the library to use it with 3-rd party projects.  
+The idea behind Kernel Forge is very simple, there's no any innovative exploitation techniques, just common things already known for security researches but in more convenient form of the library to use it with 3-rd party projects.  
 
-Many kernel mode payloads can be considered just as sequence of the function calls, but as long as we can't have any custom executable code in the kernel space because of HVCI, Kernel Forge uses the following approach to perform such kernel function calls from the user mode:
+Many kernel mode payloads can be considered just as sequence of the function calls, but as long as we can't have any custom executable code in kernel space because of HVCI, Kernel Forge uses the following approach to perform such kernel function calls from user mode:
 
- 1. Create new event object and new dummy thread that calls `WaitForSingleObject()` on this event to switch itself into the wait state. At this moment call stack the dummy thread has the following look:
+ 1. Create new event object and new dummy thread that calls `WaitForSingleObject()` on this event to switch itself into the wait state. At this moment dummy thread call stack has the following look:
 
 ```
 Child-SP          RetAddr           Call Site
@@ -68,19 +68,19 @@ fffff205`b0bfaa80 00007ffc`f882c6a4 nt!KiSystemServiceCopyEnd+0x25 (TrapFrame @ 
 00000094`169ffd90 00000000`00000000 kforge_example!DummyThread+0xd
 ```
 
- 2. Meanwhile, main thread uses `NtQuerySystemInformation()` native API function with `SystemHandleInformation` information class to find `_KTHREAD` structure address of the dummy thread.
+ 2. Meanwhile, main thread uses `NtQuerySystemInformation()` native API function with `SystemHandleInformation` information class to find dummy thread `_KTHREAD` structure address.
 
- 3. Arbitrary memory read primitive is used to obtain `StackBase` and `KernelStack` fields of `_KTHREAD` structure which describes kernel stack location of the dummy thread.
+ 3. Arbitrary memory read primitive is used to obtain `StackBase` and `KernelStack` fields of `_KTHREAD` structure which describes dummy thread kernel stack location.
 
  4. Arbitrary memory read primitive is used to traverse dummy thread kernel stack starting from its bottom to locate return address from `nt!NtWaitForSingleObject()` back to the `nt!KiSystemServiceCopyEnd()`. 
 
- 5. Then Kernel Forge constructs ROP chain to call desired kernel function with specified arguments, save its return value into the user mode memory and pass execution to `nt!ZwTerminateThread()` for graceful shutdown of the dummy thread after the ROP chain execution. Arbitrary memory write primitive is used to overwrite previously located return address with an address of the first ROP gadget:
+ 5. Then Kernel Forge constructs ROP chain to call desired kernel function with specified arguments, save its return value into the user mode memory and pass execution to `nt!ZwTerminateThread()` for graceful shutdown of dummy thread after the ROP chain execution. Arbitrary memory write primitive is used to overwrite previously located return address with an address of the first ROP gadget:
 
  <img src="https://raw.githubusercontent.com/Cr4sh/KernelForge/master/docs/images/rop_gadget.png" width="636" />
 
  6. And finally, Kernel Forge main thread sets event object to signaled state which resumes dummy thread and triggers ROP chain execution.
 
-Of course, such approach has a plenty of limitations:
+Of course, such approach has a plenty of obvious limitations:
 
  * You can't use Kernel Forge to call `nt!KeStackAttachProcess()` function that changes current process address space.
 
@@ -89,9 +89,9 @@ Of course, such approach has a plenty of limitations:
  * You can't call any functions that registers kernel mode callbacks, like `nt!IoSetCompletionRoutine()`, `nt!
 PsSetCreateProcessNotifyRoutine()` and others.
 
- * `kforge_library.lib` is relying on `WinIo.sys` driver that provides an access only to the physical memory. To achieve virtual memory access having this we need to find PML4 page map location of the kernel virtual address space. Currently <a href="https://github.com/Cr4sh/KernelForge/blob/master/kforge_driver/kforge_driver.cpp#L60">I'm using</a> `PROCESSOR_START_BLOCK` structure scan approach to get PML4 address from one of its fields. However, `PROCESSOR_START_BLOCK` is not present on machines with legacy boot, but this fact doesn't looks like a practical limitation base on such machines you can't have HVCI support due to <a href="https://docs.microsoft.com/en-us/windows/security/identity-protection/credential-guard/credential-guard-requirements">its strict requirements</a>.
+In addition, `kforge_driver.lib` is relying on `WinIo.sys` driver that provides an access only to the physical memory. To achieve virtual memory access having this we need to find PML4 page map location of the kernel virtual address space. Currently <a href="https://github.com/Cr4sh/KernelForge/blob/master/kforge_driver/kforge_driver.cpp#L60">I'm using</a> `PROCESSOR_START_BLOCK` structure scan approach to get PML4 address from one of its fields. However, `PROCESSOR_START_BLOCK` is not present on machines with legacy boot, but this fact doesn't looks like a practical limitation base on such machines you can't have HVCI support due to <a href="https://docs.microsoft.com/en-us/windows/security/identity-protection/credential-guard/credential-guard-requirements">its strict requirements</a>.
 
-However, even with first three limitations you still can develop pretty much useful kernel mode payloads for HVCI enabled targets. On the picture you can see `kforge_example.exe` utility that calls appropriate kernel functions with `kfroge_library.lib` API to perform DLL injection into the user mode process with `KernelMode` value of the `KPROCESSOR_MODE` which might be suitable to bypass some EDR/HIPS security products:
+However, even with such limitations you still can develop pretty much useful kernel mode payloads for HVCI enabled targets. On the picture you can see `kforge_example.exe` utility that calls appropriate kernel functions with `kfroge_library.lib` API to perform DLL injection into the user mode process with `KernelMode` value of the `KPROCESSOR_MODE` which might be suitable for EDR/HIPS security products bypass:
 
 <img src="https://raw.githubusercontent.com/Cr4sh/KernelForge/master/docs/images/kforge_example.png" width="762" />
 
@@ -354,12 +354,12 @@ To communicate with Secure Kernel a regular NT kernel uses special VTL0 to VTL1 
 
 <img src="https://raw.githubusercontent.com/Cr4sh/KernelForge/master/docs/images/vtl_kernel_functions.png" width="720" />
 
-This set of `Vsl` functions exposes particularly interesting attack surface for fuzzing and exploitation of the VTL1 and Secure Kernel execution environment. Using Kernel Forge you can call this functions from user mode without use of any complicated and not very convenient solutions <a href="https://github.com/Cr4sh/s6_pcie_microblaze/tree/master/python/payloads/DmaBackdoorHv">like my Hyper-V backdoor</a>. To interact with Secure Kernel using `Vsl` functions it will be more convenient to use `kforge.dll` from Python code with [ctypes library](https://docs.python.org/3/library/ctypes.html) as foreign functions interface and something like [pdbparse](https://github.com/moyix/pdbparse) to extract the addresses of not exported kernel functions from debug symbols.
+This set of `Vsl` functions exposes particularly interesting attack surface for fuzzing and exploitation of VTL1 and Secure Kernel isolated environment. Using Kernel Forge you can call this functions from user mode program without use of any complicated and not very convenient solutions <a href="https://github.com/Cr4sh/s6_pcie_microblaze/tree/master/python/payloads/DmaBackdoorHv">like my Hyper-V backdoor</a>. To interact with Secure Kernel using `Vsl` functions it will be more convenient to use `kforge.dll` from Python code with [ctypes library](https://docs.python.org/3/library/ctypes.html) as foreign functions interface and something like [pdbparse](https://github.com/moyix/pdbparse) to extract not exported kernel functions addresses from debug symbols.
 
 
 ## TODO
 
- * At this moment Kernel Forge has no support of the calls chaining, ie., single shot of the dummy thread can execute only one user specified kernel function. However, thread kernel stack has enough of free space for even more of ROP gadgets which allows to perform multiple calls as single sequence to use various kernel functions designed to work in pair (like `KeStackAttachProcess`/`KeUnstackDetachProcess`, `KeRaiseIrql`/`KeLowerIrql`, etc.) and overcome some of the limitations described above.
+ * At this moment Kernel Forge has no support of chained calls, ie., single shot of the dummy thread can execute only one user specified kernel function. However, thread kernel stack has enough of free space for even more of ROP gadgets which allows to perform multiple calls as single sequence to use various kernel functions designed to work in pair (like `KeStackAttachProcess`/`KeUnstackDetachProcess`, `KeRaiseIrql`/`KeLowerIrql`, etc.) and overcome some of the limitations described above.
 
 
 ## Developed by
