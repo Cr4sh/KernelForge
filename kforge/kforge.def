@@ -1,0 +1,13 @@
+EXPORTS
+
+KfInit
+KfUninit
+KfCall
+KfCallAddr
+KfHeapAlloc
+KfHeapAllocData
+KfHeapFree
+KfMemCopy
+KfGetSyscallNumber
+KfGetKernelProcAddress
+KfGetKernelZwProcAddress

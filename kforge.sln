@@ -15,6 +15,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kforge_example", "kforge_ex
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dummy", "dummy\dummy.vcxproj", "{60067986-A909-433D-9699-0E00FE13E16E}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kforge", "kforge\kforge.vcxproj", "{548848C6-A540-47C8-8C2F-C3B309ED331B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{01DA4344-6C0C-4692-9542-D2E895AA4AFB} = {01DA4344-6C0C-4692-9542-D2E895AA4AFB}
+		{9244F175-9960-47FB-A197-F717D5C2C370} = {9244F175-9960-47FB-A197-F717D5C2C370}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -37,6 +43,10 @@ Global
 		{60067986-A909-433D-9699-0E00FE13E16E}.Debug|x64.Build.0 = Debug|x64
 		{60067986-A909-433D-9699-0E00FE13E16E}.Release|x64.ActiveCfg = Release|x64
 		{60067986-A909-433D-9699-0E00FE13E16E}.Release|x64.Build.0 = Release|x64
+		{548848C6-A540-47C8-8C2F-C3B309ED331B}.Debug|x64.ActiveCfg = Debug|x64
+		{548848C6-A540-47C8-8C2F-C3B309ED331B}.Debug|x64.Build.0 = Debug|x64
+		{548848C6-A540-47C8-8C2F-C3B309ED331B}.Release|x64.ActiveCfg = Release|x64
+		{548848C6-A540-47C8-8C2F-C3B309ED331B}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

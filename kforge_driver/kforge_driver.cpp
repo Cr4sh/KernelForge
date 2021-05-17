@@ -301,7 +301,7 @@ BOOL DriverUninit(void)
     if (m_hDevice == NULL)
     {
         // not initialized
-        return FALSE;
+        return TRUE;
     }
 
     CloseHandle(m_hDevice);
