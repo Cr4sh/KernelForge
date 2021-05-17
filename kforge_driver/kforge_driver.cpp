@@ -344,12 +344,6 @@ BOOL DriverMemWrite(PVOID Addr, PVOID Data, DWORD_PTR DataSize)
 
     return FALSE;
 }
-
-BOOL DriverMemWritePtr(PVOID Addr, PVOID Value)
-{
-    // write single pointer at virtual memory address
-    return DriverMemWrite(Addr, &Value, sizeof(PVOID));
-}
 //--------------------------------------------------------------------------------------
 BOOL DriverMemRead(PVOID Addr, PVOID Data, DWORD_PTR DataSize)
 {
@@ -373,12 +367,6 @@ BOOL DriverMemRead(PVOID Addr, PVOID Data, DWORD_PTR DataSize)
     }
 
     return FALSE;
-}
-
-BOOL DriverMemReadPtr(PVOID Addr, PVOID *Value)
-{
-    // read single pointer from virtual memory address
-    return DriverMemRead(Addr, Value, sizeof(PVOID));
 }
 //--------------------------------------------------------------------------------------
 // EoF

