@@ -80,7 +80,7 @@ fffff205`b0bfaa80 00007ffc`f882c6a4 nt!KiSystemServiceCopyEnd+0x25 (TrapFrame @ 
 
  6. And finally, Kernel Forge main thread sets event object to signaled state which resumes dummy thread and triggers ROP chain execution.
 
-Of course, such approach has a plenty of obvious limitations:
+As you can see, it's pretty reliable things with no any magic involved. Of course, such approach has a plenty of obvious limitations:
 
  * You can't use Kernel Forge to call `nt!KeStackAttachProcess()` function that changes current process address space.
 
