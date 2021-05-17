@@ -439,7 +439,7 @@ static DWORD WINAPI DummyThread(LPVOID lpParam)
     return 0;
 }
 
-BOOL KfCallAddr(PVOID FuncAddr, PVOID *Args, DWORD dwArgsCount, PVOID *pRetVal)
+BOOL KfCallAddr(PVOID ProcAddr, PVOID *Args, DWORD dwArgsCount, PVOID *pRetVal)
 {
     BOOL bRet = FALSE;    
     HANDLE hThread = NULL, hEvent = NULL;       
@@ -491,6 +491,8 @@ BOOL KfCallAddr(PVOID FuncAddr, PVOID *Args, DWORD dwArgsCount, PVOID *pRetVal)
 
         SwitchToThread();
     }
+
+    DebugBreak();
 
     // get _KTHREAD address by handle
     PVOID pThread = GetObjectAddress(hThread);
@@ -584,7 +586,7 @@ BOOL KfCallAddr(PVOID FuncAddr, PVOID *Args, DWORD dwArgsCount, PVOID *pRetVal)
     STACK_PUT(0x00, m_RopAddr_1);
 
     // save an address for the forged function call
-    STACK_PUT(0x08 + 0x20, FuncAddr);
+    STACK_PUT(0x08 + 0x20, ProcAddr);
 
     if (dwArgsCount > 0)
     {
@@ -681,27 +683,27 @@ _end:
     return bRet;
 }
 //--------------------------------------------------------------------------------------
-BOOL KfCall(char *lpszName, PVOID *Args, DWORD dwArgsCount, PVOID *pRetVal)
+BOOL KfCall(char *lpszProcName, PVOID *Args, DWORD dwArgsCount, PVOID *pRetVal)
 {
     PVOID FuncAddr = NULL;
 
     // obtain target exported function address by its name
-    if ((FuncAddr = KfGetKernelProcAddress(lpszName)) == NULL)
+    if ((FuncAddr = KfGetKernelProcAddress(lpszProcName)) == NULL)
     {
-        if (!strncmp(lpszName, "Zw", 2))
+        if (!strncmp(lpszProcName, "Zw", 2))
         {
             // try to obtain not exported Zw function address
-            FuncAddr = KfGetKernelZwProcAddress(lpszName);
+            FuncAddr = KfGetKernelZwProcAddress(lpszProcName);
         }
     }
 
     if (FuncAddr == NULL)
     {
-        DbgMsg(__FILE__, __LINE__, __FUNCTION__"() ERROR: Unable to find %s() address\n", lpszName);
+        DbgMsg(__FILE__, __LINE__, __FUNCTION__"() ERROR: Unable to find %s() address\n", lpszProcName);
         return FALSE;
     }
 
-    DbgMsg(__FILE__, __LINE__, "nt!%s() is at "IFMT"\n", lpszName, FuncAddr);
+    DbgMsg(__FILE__, __LINE__, "nt!%s() is at "IFMT"\n", lpszProcName, FuncAddr);
 
     // perform the call
     return KfCallAddr(FuncAddr, Args, dwArgsCount, pRetVal);
@@ -746,17 +748,12 @@ PVOID KfHeapAlloc(DWORD Size)
     return KfHeapAllocData(Size, NULL);
 }
 //--------------------------------------------------------------------------------------
-BOOL KfHeapFree(PVOID Addr)
+void KfHeapFree(PVOID Addr)
 {
     PVOID Args[] = { KF_ARG(Addr) };
 
     // free kernel pool memory
-    if (KfCall("ExFreePool", Args, 1, NULL))
-    {
-        return TRUE;
-    }
-
-    return FALSE;
+    KfCall("ExFreePool", Args, 1, NULL);
 }
 //--------------------------------------------------------------------------------------
 // EoF

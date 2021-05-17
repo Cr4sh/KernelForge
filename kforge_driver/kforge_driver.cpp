@@ -276,7 +276,7 @@ BOOL DriverInit(void)
             }
             else
             {
-                DbgMsg(__FILE__, __LINE__, __FUNCTION__"() ERROR: DriverInit() fails\n");
+                DbgMsg(__FILE__, __LINE__, __FUNCTION__"() ERROR: DriverInitPageTableBase() fails\n");
             }
 
             CloseHandle(m_hDevice);
