@@ -180,9 +180,45 @@ BOOL DllInject(HANDLE ProcessId, PVOID Data, DWORD dwDataSize)
         goto _end;
     }
 
+    if (hThread)
+    {
+        PVOID Args[] = { KF_ARG(hThread) };
+
+        // close created thread handle
+        if (KfCall("ZwClose", Args, 1, KF_RET(&Status)))
+        {
+            if (NT_ERROR(Status))
+            {
+                DbgMsg(__FILE__, __LINE__, "ZwClose() ERROR 0x%.8x\n", Status);
+            }
+        }
+        else
+        {
+            DbgMsg(__FILE__, __LINE__, "ERROR: KfCall() fails\n");
+        }
+    }
+
     bRet = TRUE;
 
 _end:
+
+    if (hProcess)
+    {
+        PVOID Args[] = { KF_ARG(hProcess) }; 
+
+        // close target process handle
+        if (KfCall("ZwClose", Args, 1, KF_RET(&Status)))
+        {
+            if (NT_ERROR(Status))
+            {
+                DbgMsg(__FILE__, __LINE__, "ZwClose() ERROR 0x%.8x\n", Status);
+            }
+        }
+        else
+        {
+            DbgMsg(__FILE__, __LINE__, "ERROR: KfCall() fails\n");
+        }
+    }
 
     if (NT_ERROR(Status))
     {
@@ -227,25 +263,7 @@ _end:
             {
                 DbgMsg(__FILE__, __LINE__, "ERROR: KfCall() fails\n");
             }
-        }
-
-        if (hProcess)
-        {
-            PVOID Args[] = { KF_ARG(hProcess) };            // ProcessHandle
-
-            // close target process handle
-            if (KfCall("ZwClose", Args, 1, KF_RET(&Status)))
-            {
-                if (NT_ERROR(Status))
-                {
-                    DbgMsg(__FILE__, __LINE__, "ZwClose() ERROR 0x%.8x\n", Status);
-                }
-            }
-            else
-            {
-                DbgMsg(__FILE__, __LINE__, "ERROR: KfCall() fails\n");
-            }
-        }
+        }        
     }
 
     if (InjectStruct)

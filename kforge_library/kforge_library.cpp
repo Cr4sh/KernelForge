@@ -183,7 +183,6 @@ PVOID KfGetKernelZwProcAddress(char *lpszProcName)
 //--------------------------------------------------------------------------------------
 BOOL KfInit(void)
 {
-    BOOL bRet = FALSE;
     char szKernelName[MAX_PATH], szKernelPath[MAX_PATH];
 
     if (m_bInitialized)
@@ -379,11 +378,11 @@ BOOL KfInit(void)
 
     DbgMsg(__FILE__, __LINE__, "nt!ZwTerminateThread() is at "IFMT"\n", m_ZwTerminateThread);
 
-    m_bInitialized = bRet = TRUE;
+    m_bInitialized = TRUE;
 
 _end:
 
-    if (!bRet)
+    if (!m_bInitialized)
     {
         if (m_KernelImage)
         {
@@ -397,7 +396,7 @@ _end:
         DriverUninit();        
     }
 
-    return bRet;
+    return m_bInitialized;
 }
 //--------------------------------------------------------------------------------------
 BOOL KfUninit(void)
