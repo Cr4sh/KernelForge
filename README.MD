@@ -354,7 +354,7 @@ To communicate with Secure Kernel a regular NT kernel uses special VTL0 to VTL1 
 
 <img src="https://raw.githubusercontent.com/Cr4sh/KernelForge/master/docs/images/vtl_kernel_functions.png" width="720" />
 
-This set of `Vsl` functions exposes particularly interesting attack surface for fuzzing and exploitation of VTL1 and Secure Kernel isolated environment. Using Kernel Forge you can call this functions from user mode program without use of any complicated and not very convenient solutions <a href="https://github.com/Cr4sh/s6_pcie_microblaze/tree/master/python/payloads/DmaBackdoorHv">like my Hyper-V backdoor</a>. To interact with Secure Kernel using `Vsl` functions it's more suitable to use `kforge.dll` from Python code with [ctypes library](https://docs.python.org/3/library/ctypes.html) as foreign functions interface and something like [pdbparse](https://github.com/moyix/pdbparse) to extract not exported kernel functions addresses from debug symbols.
+This set of `Vsl` functions exposes particularly interesting attack surface for fuzzing and exploitation of VTL1 and Secure Kernel isolated environment. Using Kernel Forge you can call this functions from user mode program without use of any complicated and not very convenient solutions <a href="https://github.com/Cr4sh/s6_pcie_microblaze/tree/master/python/payloads/DmaBackdoorHv">like my Hyper-V backdoor</a>. To interact with Secure Kernel by calling `Vsl` functions of NT kernel it's more suitable to use `kforge.dll` from Python code with [ctypes library](https://docs.python.org/3/library/ctypes.html) as foreign functions interface and something like [pdbparse](https://github.com/moyix/pdbparse) to extract not exported kernel functions addresses from debug symbols.
 
 
 ## TODO
