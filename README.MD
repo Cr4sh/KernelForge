@@ -355,7 +355,7 @@ For more complete example please refer to the `kforge_example.exe` <a href="http
 
 ## Interfacing Secure Kernel with Kernel Forge
 
-On VBS/HVCI enabled machines Hyper-V functionality is employed to logically divide the system into the two separate "worlds": normal world (VTL0) running a regular NT kernel (ntoskrnl) that we’re all familiar with and isolated secure world (VTL1) running a Secure Kernel (SK). To learn more about VBS/HVCI internals I recommend you the following materials:
+On VBS/HVCI enabled machines Hyper-V functionality is employed to logically divide the system into the two separate "worlds": normal world (VTL0) running a regular NT kernel (ntoskrnl) that we’re all familiar with and isolated secure world (VTL1) running a Secure Kernel (SK). To learn more about VBS/HVCI internals I can recommend you the following materials:
 
  * [Battle Of The SKM And IUM: How Windows 10 Rewrites OS Architecture](https://www.youtube.com/watch?v=LqaWIn4y26E) by [Alex Ionescu](https://twitter.com/aionescu)
 
@@ -363,11 +363,13 @@ On VBS/HVCI enabled machines Hyper-V functionality is employed to logically divi
 
  * [Work Package 6: Virtual Secure Mode](https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Cyber-Sicherheit/SiSyPHus/Workpackage6_Virtual_Secure_Mode.pdf?__blob=publicationFile&v=2) by [The BSI](https://www.bsi.bund.de/EN/TheBSI/thebsi_node.html)
 
+Also, have a look at <a href="https://github.com/Cr4sh/s6_pcie_microblaze/tree/master/python/payloads/DmaBackdoorHv">my Hyper-V backdoor project</a> that allows to bypass HCVI, load custom kernel drivers in VTL1, run 3-rd party trustlets in Isolated User Mode (IUM) and do many others things.  
+
 To communicate with Secure Kernel ntoskrnl uses special VTL0 to VTL1 Hyper-V hypercalls documented in [Hyper-V Hypervisor Top-Level Functional Specification](https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/reference/tlfs) which are performed by `nt!HvlSwitchToVsmVtl1()` helper function. This not exported function is used by dozens of others not exported ntoskrnl functions to perform various actions, most of them has `Vsl` prefix:
 
 <img src="https://raw.githubusercontent.com/Cr4sh/KernelForge/master/docs/images/vtl_kernel_functions.png" width="720" />
 
-This set of `Vsl` functions exposes particularly interesting attack surface for fuzzing and exploitation of VTL1 and Secure Kernel isolated environment. Using Kernel Forge you can call this functions from user mode program without use of any complicated and not very convenient solutions <a href="https://github.com/Cr4sh/s6_pcie_microblaze/tree/master/python/payloads/DmaBackdoorHv">like my Hyper-V backdoor</a>. To interact with Secure Kernel by calling `Vsl` functions of NT kernel it's more suitable to use `kforge.dll` from Python code with [ctypes library](https://docs.python.org/3/library/ctypes.html) as foreign functions interface and something like [pdbparse](https://github.com/moyix/pdbparse) to extract not exported functions addresses from debug symbols.
+This set of `Vsl` functions exposes particularly interesting attack surface for fuzzing and exploitation of VTL1 and Secure Kernel isolated environment. Using Kernel Forge you can call this functions from user mode program without use of any complicated and not very convenient solutions like my Hyper-V backdoor or <a href="https://github.com/commial/experiments/tree/master/debugging-secure-kernel">QEMU based debugger</a>. To interact with Secure Kernel by calling `Vsl` functions of NT kernel it's more suitable to use `kforge.dll` from Python code with [ctypes library](https://docs.python.org/3/library/ctypes.html) as foreign functions interface and something like [pdbparse](https://github.com/moyix/pdbparse) to extract not exported functions addresses from debug symbols.
 
 
 ## TODO
