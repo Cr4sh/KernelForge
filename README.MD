@@ -10,9 +10,9 @@
 
 ## General information
 
-Today <a href="https://www.microsoft.com/en-us/windowsforbusiness/windows10-secured-core-computers">more and more Windows machines</a> comes with VBS enabled which forces kernel exploits and rootkits developers to accept new challenges. [Windows Virtualization-based Security (VBS)](https://docs.microsoft.com/en-us/windows-hardware/design/device-experiences/oem-vbs) uses hardware virtualization features and Hyper-V to host a number of security services, providing them with greatly increased protection from vulnerabilities in the operating system, and preventing the use of malicious exploits which attempt to defeat protections. One of the examples of such services is [Hypervisor-Enforced Code Integrity (HVCI)](https://docs.microsoft.com/en-us/windows/security/threat-protection/device-guard/enable-virtualization-based-protection-of-code-integrity) which uses VBS to significantly strengthen code integrity policy enforcement.
+Today <a href="https://www.microsoft.com/en-us/windowsforbusiness/windows10-secured-core-computers">more and more Windows machines</a> comes with VBS enabled by default which forces rootkits and kernel exploits developers to accept new challenges. [Windows Virtualization-based Security (VBS)](https://docs.microsoft.com/en-us/windows-hardware/design/device-experiences/oem-vbs) uses hardware virtualization features and Hyper-V to host a number of security services, providing them with greatly increased protection from vulnerabilities in the operating system, and preventing the use of malicious exploits which attempt to defeat protections. One of such services is [Hypervisor-Enforced Code Integrity (HVCI)](https://docs.microsoft.com/en-us/windows/security/threat-protection/device-guard/enable-virtualization-based-protection-of-code-integrity) that uses VBS to significantly strengthen code integrity policy enforcement.
 
- * **Q1:** On HVCI enabled target I can't execute my own kernel code anymore even with most awesome local privileges escalation kernel exploit that gives powerful arbitrary memory read write primitives.  
+ * **Q1:** On HVCI enabled target I can't execute my own kernel code anymore, even with most awesome local privileges escalation kernel exploit that gives powerful arbitrary memory read write primitives.  
 
  * **A1:** You can use data only attack to overwrite process token, gain Local System and load any <a href="https://github.com/hfiref0x/KDU#currently-supported-providers">legitimate 3-rd party WHQL signed driver</a> that provides an access to I/O ports, physical memory and MSR registers.  
 
@@ -50,7 +50,7 @@ Kernel Forge code base consists from the following files:
 
 The idea behind Kernel Forge is very simple, there's no any innovative exploitation techniques, just common things already known for security researches but in more convenient form of the library to use it with 3-rd party projects.  
 
-Many kernel mode payloads can be considered just as sequence of the function calls, but as long as we can't have any custom executable code in kernel space because of HVCI, Kernel Forge uses the following approach to perform such kernel function calls from user mode:
+Many kernel mode payloads can be considered just as sequence of function calls, but as long as we can't have any attacker controlled executable code in kernel space because of HVCI, Kernel Forge uses the following approach to perform such kernel function calls from user mode:
 
  1. Create new event object and new dummy thread that calls `WaitForSingleObject()` on this event to switch itself into the wait state. At this moment dummy thread call stack has the following look:
 
@@ -70,7 +70,7 @@ fffff205`b0bfaa80 00007ffc`f882c6a4 nt!KiSystemServiceCopyEnd+0x25 (TrapFrame @ 
 
  2. Meanwhile, main thread uses `NtQuerySystemInformation()` native API function with `SystemHandleInformation` information class to find dummy thread `_KTHREAD` structure address.
 
- 3. Arbitrary memory read primitive is used to obtain `StackBase` and `KernelStack` fields of `_KTHREAD` structure which describes dummy thread kernel stack location.
+ 3. Arbitrary memory read primitive is used to obtain `StackBase` and `KernelStack` fields of `_KTHREAD` structure that keeps an information about dummy thread kernel stack location.
 
  4. Arbitrary memory read primitive is used to traverse dummy thread kernel stack starting from its bottom to locate return address from `nt!NtWaitForSingleObject()` back to the `nt!KiSystemServiceCopyEnd()`. 
 
@@ -80,18 +80,18 @@ fffff205`b0bfaa80 00007ffc`f882c6a4 nt!KiSystemServiceCopyEnd+0x25 (TrapFrame @ 
 
  6. And finally, Kernel Forge main thread sets event object to signaled state which resumes dummy thread and triggers ROP chain execution.
 
-As you can see, it's pretty reliable things with no any magic involved. Of course, such approach has a plenty of obvious limitations:
+As you can see, it's pretty reliable technique with no any magic involved. Of course, this approach has a plenty of obvious limitations:
 
  * You can't use Kernel Forge to call `nt!KeStackAttachProcess()` function that changes current process address space.
 
- * You only can execute your calls <a href="https://docs.microsoft.com/en-us/windows-hardware/drivers/kernel/managing-hardware-priorities">at passive IRQL level</a>.
+ * You can execute your calls at <a href="https://docs.microsoft.com/en-us/windows-hardware/drivers/kernel/managing-hardware-priorities">passive IRQL level</a> only.
 
  * You can't call any functions that registers kernel mode callbacks, like `nt!IoSetCompletionRoutine()`, `nt!
 PsSetCreateProcessNotifyRoutine()` and others.
 
-In addition, `kforge_driver.lib` is relying on `WinIo.sys` driver that provides an access only to the physical memory. To achieve virtual memory access having this we need to find PML4 page map location of the kernel virtual address space. Currently <a href="https://github.com/Cr4sh/KernelForge/blob/e4f5f10f474c9316776c6679e3347d8e8fe1bf0a/kforge_driver/kforge_driver.cpp#L60">I'm using</a> `PROCESSOR_START_BLOCK` structure scan approach to get PML4 address from one of its fields. However, `PROCESSOR_START_BLOCK` is not present on machines with legacy boot, but this fact doesn't looks like a practical limitation because you can't have HVCI support on such machines due to <a href="https://docs.microsoft.com/en-us/windows/security/identity-protection/credential-guard/credential-guard-requirements">its strict requirements</a>.
+In addition, `kforge_driver.lib` is relying on `WinIo.sys` driver that provides only physical memory access. To achieve virtual memory access having this we need to find PML4 page map location of the kernel virtual address space. Currently <a href="https://github.com/Cr4sh/KernelForge/blob/e4f5f10f474c9316776c6679e3347d8e8fe1bf0a/kforge_driver/kforge_driver.cpp#L60">I'm using</a> `PROCESSOR_START_BLOCK` structure scan approach to get PML4 address from one of its fields. However, `PROCESSOR_START_BLOCK` is not present on machines with legacy boot, but this fact is rather not a real problem because you can't have HVCI support on such machines due to <a href="https://docs.microsoft.com/en-us/windows/security/identity-protection/credential-guard/credential-guard-requirements">its strict requirements</a>.
 
-However, even with such limitations you still can develop pretty much useful kernel mode payloads for HVCI enabled targets. On the picture you can see `kforge_example.exe` utility that calls appropriate kernel functions with `kfroge_library.lib` API to perform DLL injection into the user mode process with `KernelMode` value of the `KPROCESSOR_MODE` which might be suitable for EDR/HIPS security products bypass:
+However, even with mentioned limitations you still can develop pretty much useful kernel mode payloads for HVCI enabled targets. On the picture you can see `kforge_example.exe` utility that calls appropriate kernel functions with `kfroge_library.lib` API to perform DLL injection into the user mode process with `KernelMode` value of the `KPROCESSOR_MODE` which might be suitable for EDR/HIPS security products bypass:
 
 <img src="https://raw.githubusercontent.com/Cr4sh/KernelForge/master/docs/images/kforge_example.png" width="762" />
 
@@ -355,7 +355,7 @@ For more complete example please refer to the `kforge_example.exe` <a href="http
 
 ## Interfacing Secure Kernel with Kernel Forge
 
-On VBS/HVCI enabled machines Hyper-V functionality is employed to logically divide the system into the two separate "worlds": normal world (VTL0) running the NT kernel that we’re all familiar with and isolated secure world (VTL1) running a Secure Kernel (SK). To learn more about VBS/HVCI internals I recommend you the following materials:
+On VBS/HVCI enabled machines Hyper-V functionality is employed to logically divide the system into the two separate "worlds": normal world (VTL0) running a regular NT kernel (ntoskrnl) that we’re all familiar with and isolated secure world (VTL1) running a Secure Kernel (SK). To learn more about VBS/HVCI internals I recommend you the following materials:
 
  * [Battle Of The SKM And IUM: How Windows 10 Rewrites OS Architecture](https://www.youtube.com/watch?v=LqaWIn4y26E) by [Alex Ionescu](https://twitter.com/aionescu)
 
@@ -363,7 +363,7 @@ On VBS/HVCI enabled machines Hyper-V functionality is employed to logically divi
 
  * [Work Package 6: Virtual Secure Mode](https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Cyber-Sicherheit/SiSyPHus/Workpackage6_Virtual_Secure_Mode.pdf?__blob=publicationFile&v=2) by [The BSI](https://www.bsi.bund.de/EN/TheBSI/thebsi_node.html)
 
-To communicate with Secure Kernel a regular NT kernel uses special VTL0 to VTL1 Hyper-V hypercalls documented in [Hyper-V Hypervisor Top-Level Functional Specification](https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/reference/tlfs) which are performed by `nt!HvlSwitchToVsmVtl1()` helper function. This not exported function is used by dozens of others not exported NT kernel functions to perform various actions, most of them has `Vsl` prefix:
+To communicate with Secure Kernel ntoskrnl uses special VTL0 to VTL1 Hyper-V hypercalls documented in [Hyper-V Hypervisor Top-Level Functional Specification](https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/reference/tlfs) which are performed by `nt!HvlSwitchToVsmVtl1()` helper function. This not exported function is used by dozens of others not exported ntoskrnl functions to perform various actions, most of them has `Vsl` prefix:
 
 <img src="https://raw.githubusercontent.com/Cr4sh/KernelForge/master/docs/images/vtl_kernel_functions.png" width="720" />
 
@@ -372,7 +372,7 @@ This set of `Vsl` functions exposes particularly interesting attack surface for 
 
 ## TODO
 
- * At this moment Kernel Forge has no support of chained calls, ie., single shot of the dummy thread can execute only one user specified kernel function. However, thread kernel stack has enough of free space for even more of ROP gadgets which allows to perform multiple calls as single sequence to use various kernel functions designed to work in pair (like `KeStackAttachProcess`/`KeUnstackDetachProcess`, `KeRaiseIrql`/`KeLowerIrql`, etc.) and overcome some of the limitations described above.
+ * At this moment Kernel Forge has no support of chained calls, ie., single shot of the dummy thread can execute only one user specified kernel function. However, thread kernel stack has enough of free space to fit more ROP gadgets which might allow to perform multiple calls as single sequence. Such feature might be used to call various kernel functions designed to work in pair (like `KeStackAttachProcess`/`KeUnstackDetachProcess`, `KeRaiseIrql`/`KeLowerIrql`, etc.) and overcome some of the limitations described above.
 
 
 ## Developed by
