@@ -72,7 +72,7 @@ fffff205`b0bfaa80 00007ffc`f882c6a4 nt!KiSystemServiceCopyEnd+0x25 (TrapFrame @ 
 
  3. Arbitrary memory read primitive is used to obtain `StackBase` and `KernelStack` fields of `_KTHREAD` structure that keeps an information about dummy thread kernel stack location.
 
- 4. Arbitrary memory read primitive is used to traverse dummy thread kernel stack starting from its bottom to locate return address from `nt!NtWaitForSingleObject()` back to the `nt!KiSystemServiceCopyEnd()`. 
+ 4. Arbitrary memory read primitive is used to traverse dummy thread kernel stack starting from its bottom to locate return address from `nt!NtWaitForSingleObject()` back to the `nt!KiSystemServiceCopyEnd()` function of system calls dispatcher. 
 
  5. Then Kernel Forge <a href="https://github.com/Cr4sh/KernelForge/blob/e4f5f10f474c9316776c6679e3347d8e8fe1bf0a/kforge_library/kforge_library.cpp#L583">constructs some ROP chain</a> to call desired kernel function with specified arguments, save its return value into the user mode memory and pass execution to `nt!ZwTerminateThread()` for graceful shutdown of dummy thread after the ROP chain execution. Arbitrary memory write primitive is used to overwrite previously located return address with an address of the first ROP gadget:
 
