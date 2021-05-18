@@ -60,14 +60,17 @@ static BOOL KfGetKernelImageInfo(PVOID *pImageAddress, PDWORD pdwImageSize, char
 {
     // query loaded kernel modules information
     PRTL_PROCESS_MODULES Info = (PRTL_PROCESS_MODULES)GetSystemInformation(SystemModuleInformation);
-    if (Info)
+    if (Info && Info->NumberOfModules > 0)
     {
-        // return kernel image load address and size
-        *pImageAddress = Info->Modules[0].ImageBase;
-        *pdwImageSize = Info->Modules[0].ImageSize;
+        // kernel usually goes first: this might be not very reliable, idk
+        PRTL_PROCESS_MODULE_INFORMATION Module = &Info->Modules[0];
+
+        // return image load address and size
+        *pImageAddress = Module->ImageBase;
+        *pdwImageSize = Module->ImageSize;
 
         // get kernel file name from NT path
-        strcpy(lpszName, (char *)Info->Modules[0].FullPathName + Info->Modules[0].OffsetToFileName);
+        strcpy_s(lpszName, MAX_PATH, (char *)(Module->FullPathName + Module->OffsetToFileName));
 
         M_FREE(Info);
 
@@ -251,8 +254,8 @@ BOOL KfInit(void)
     DbgMsg(__FILE__, __LINE__, "Kernel is at "IFMT", image size is 0x%x\n", m_KernelAddr, m_dwKernelSize);      
 
     GetSystemDirectory(szKernelPath, MAX_PATH);
-    strcat(szKernelPath, "\\");
-    strcat(szKernelPath, szKernelName);
+    strcat_s(szKernelPath, "\\");
+    strcat_s(szKernelPath, szKernelName);
 
     PVOID Data = NULL;
     DWORD dwDataSize = 0;

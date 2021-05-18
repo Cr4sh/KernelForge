@@ -10,7 +10,7 @@ BOOL DllInject(HANDLE ProcessId, PVOID Data, DWORD dwDataSize)
     DWORD_PTR Status = STATUS_UNSUCCESSFUL;
     HANDLE hProcess = NULL, hThread = NULL;
     PVOID ImageAddr = NULL, ShellcodeAddr = NULL;
-    SIZE_T ImageSize = 0, ShellcodeSize = 0;
+    SIZE_T ImageSize = 0, InjectStructSize = 0;
 
     // map image sections to the memory
     if (!LdrMapImage(Data, dwDataSize, &Image, &dwImageSize))
@@ -38,7 +38,7 @@ BOOL DllInject(HANDLE ProcessId, PVOID Data, DWORD dwDataSize)
     OBJECT_ATTRIBUTES ObjAttr;
     
     ImageSize = dwImageSize;
-    ShellcodeSize = dwInjectStructSize;
+    InjectStructSize = dwInjectStructSize;
 
     InitializeObjectAttributes(&ObjAttr, NULL, OBJ_KERNEL_HANDLE, NULL, NULL);
 
@@ -92,7 +92,8 @@ BOOL DllInject(HANDLE ProcessId, PVOID Data, DWORD dwDataSize)
         goto _end;
     }
 
-    InjectStruct->ModuleBase = ImageAddr;
+    // set proper size once again, ZwAllocateVirtualMemory() may round it
+    ImageSize = dwImageSize;    
 
     PVOID Args_3[] = { KF_ARG(hProcess),                    // ProcessHandle    
                        KF_ARG(ImageAddr),                   // BaseAddress
@@ -116,7 +117,7 @@ BOOL DllInject(HANDLE ProcessId, PVOID Data, DWORD dwDataSize)
     PVOID Args_4[] = { KF_ARG(hProcess),                    // ProcessHandle    
                        KF_ARG(&ShellcodeAddr),              // BaseAddress
                        KF_ARG(0),                           // ZeroBits
-                       KF_ARG(&ShellcodeSize),              // RegionSize
+                       KF_ARG(&InjectStructSize),           // RegionSize
                        KF_ARG(MEM_COMMIT | MEM_RESERVE),    // AllocationType
                        KF_ARG(PAGE_EXECUTE_READWRITE) };    // Protect
 
@@ -135,10 +136,14 @@ BOOL DllInject(HANDLE ProcessId, PVOID Data, DWORD dwDataSize)
 
     DbgMsg(__FILE__, __LINE__, "Shellcode memory was allocated at "IFMT"\n", ShellcodeAddr);
 
+    // set proper size once again, ZwAllocateVirtualMemory() may round it
+    InjectStructSize = dwInjectStructSize;
+    InjectStruct->ModuleBase = ImageAddr;
+
     PVOID Args_5[] = { KF_ARG(hProcess),                    // ProcessHandle    
                        KF_ARG(ShellcodeAddr),               // BaseAddress
                        KF_ARG(InjectStruct),                // Buffer
-                       KF_ARG(ShellcodeSize),               // NumberOfBytesToWrite
+                       KF_ARG(InjectStructSize),            // NumberOfBytesToWrite
                        KF_ARG(NULL) };                      // NumberOfBytesWritten
 
     // write shellcode into the process memory
@@ -227,7 +232,7 @@ _end:
         {
             PVOID Args[] = { KF_ARG(hProcess),              // ProcessHandle
                              KF_ARG(&ShellcodeAddr),        // BaseAddress
-                             KF_ARG(&ShellcodeSize),        // RegionSize
+                             KF_ARG(&InjectStructSize),     // RegionSize
                              KF_ARG(MEM_RELEASE) };         // FreeType
 
             // free shellcode memory

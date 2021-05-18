@@ -57,7 +57,7 @@ static DWORD_PTR m_PML4_Addr = 0;
 // loldriver device handle
 static HANDLE m_hDevice = NULL;
 //--------------------------------------------------------------------------------------
-static BOOL DriverInitPageTableBase(void)
+static BOOL DriverInitPageTableBase(PDWORD_PTR pPML4_Addr)
 {
     BOOL bRet = FALSE;
 
@@ -91,7 +91,10 @@ static BOOL DriverInitPageTableBase(void)
             DbgMsg(__FILE__, __LINE__, "PROCESSOR_START_BLOCK is at "IFMT"\n", Addr);
             DbgMsg(__FILE__, __LINE__, "Kernel mode PML4 address is "IFMT"\n", PML4_Addr);
 
-            m_PML4_Addr = PML4_Addr;
+            if (pPML4_Addr)
+            {
+                *pPML4_Addr = PML4_Addr;
+            }            
             
             bRet = TRUE;
             break;
@@ -191,7 +194,7 @@ static BOOL DriverVirtToPhys(DWORD_PTR PML4_Addr, PVOID AddrVirt, PDWORD_PTR pAd
             // check if PT entry is present
             if (PT_entry.Bits.Present)
             {
-                // calculate 4Kb physical page address
+                // calculate 4Kb page address
                 *pAddrPhys = PFN_TO_PAGE(PT_entry.Bits.PageTableBaseAddress) + PAGE_OFFSET_4K(AddrVirt);
                 return TRUE;
             }
@@ -202,14 +205,14 @@ static BOOL DriverVirtToPhys(DWORD_PTR PML4_Addr, PVOID AddrVirt, PDWORD_PTR pAd
         }
         else
         {
-            // calculate 2Mb page physical page address
+            // calculate 2Mb page address
             *pAddrPhys = PFN_TO_PAGE(PD_entry.Bits.PageTableBaseAddress) + PAGE_OFFSET_2M(AddrVirt);
             return TRUE;
         }                  
     }
     else
     {
-        // calculate 1Gb page physical page address
+        // calculate 1Gb page address
         *pAddrPhys = PFN_TO_PAGE(PDPT_entry.Bits.PageTableBaseAddress) + PAGE_OFFSET_1G(AddrVirt);
         return TRUE;
     }
@@ -236,7 +239,7 @@ BOOL DriverInit(void)
 
     // make driver file path
     GetSystemDirectory(szFilePath, MAX_PATH);
-    strcat(szFilePath, "\\drivers\\" WINIO_DRIVER_NAME);
+    strcat_s(szFilePath, "\\drivers\\" WINIO_DRIVER_NAME);
 
     // first try to start already existing service
     if (!(bStarted = ServiceStart(WINIO_SERVICE_NAME, szFilePath, FALSE)))
@@ -259,7 +262,6 @@ BOOL DriverInit(void)
         }
     }
 
-    // copy driver into the drivers directory
     if (bStarted)
     {
         // get handle of the target device
@@ -270,7 +272,7 @@ BOOL DriverInit(void)
             DbgMsg(__FILE__, __LINE__, "%s kernel driver was successfully loaded\n", WINIO_DRIVER_NAME);
 
             // initialize PML4 address
-            if (DriverInitPageTableBase())
+            if (DriverInitPageTableBase(&m_PML4_Addr))
             {
                 return TRUE;
             }
@@ -309,7 +311,7 @@ BOOL DriverUninit(void)
 
     // make driver file path
     GetSystemDirectory(szFilePath, MAX_PATH);
-    strcat(szFilePath, "\\drivers\\" WINIO_DRIVER_NAME);
+    strcat_s(szFilePath, "\\drivers\\" WINIO_DRIVER_NAME);
 
     // remove service
     ServiceStop(WINIO_SERVICE_NAME);
