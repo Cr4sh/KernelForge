@@ -358,15 +358,17 @@ For more complete example please refer to the `kforge_example.exe` <a href="http
 
 On VBS/HVCI enabled machines Hyper-V functionality is employed to logically divide the system into the two separate "worlds": normal world (VTL0) running a regular NT kernel (ntoskrnl) that we’re all familiar with and isolated secure world (VTL1) running a Secure Kernel (SK). To learn more about VBS/HVCI internals I can recommend you the following materials:
 
- * [Battle Of The SKM And IUM: How Windows 10 Rewrites OS Architecture](https://www.youtube.com/watch?v=LqaWIn4y26E) by [Alex Ionescu](https://twitter.com/aionescu)
-
  * [Live forensics on the Windows 10 secure kernel](https://www.semanticscholar.org/paper/Live-forensics-on-the-Windows-10-secure-kernel.-Brendmo/e275cc28c5c8e8e158c45e5e773d0fa3da01e118) by Hans Kristian Brendmo
 
  * [Work Package 6: Virtual Secure Mode](https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Cyber-Sicherheit/SiSyPHus/Workpackage6_Virtual_Secure_Mode.pdf?__blob=publicationFile&v=2) by [The BSI](https://www.bsi.bund.de/EN/TheBSI/thebsi_node.html)
 
+ * [Battle Of The SKM And IUM: How Windows 10 Rewrites OS Architecture](https://www.youtube.com/watch?v=LqaWIn4y26E) by [Alex Ionescu](https://twitter.com/aionescu)
+
+ * [Breaking VSM by Attacking Secure Kernel](https://i.blackhat.com/USA-20/Thursday/us-20-Amar-Breaking-VSM-By-Attacking-SecureKernal.pdf) by [Saar Amar](https://twitter.com/AmarSaar) and [Daniel King](https://twitter.com/long123king)
+
 Also, have a look at <a href="https://github.com/Cr4sh/s6_pcie_microblaze/tree/master/python/payloads/DmaBackdoorHv">my Hyper-V backdoor project</a> that allows to bypass HCVI, load custom kernel drivers in VTL1, run 3-rd party trustlets in Isolated User Mode (IUM) and do many others things.  
 
-To communicate with Secure Kernel ntoskrnl uses special VTL0 to VTL1 Hyper-V hypercalls documented in [Hyper-V Hypervisor Top-Level Functional Specification](https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/reference/tlfs) which are performed by `nt!HvlSwitchToVsmVtl1()` helper function. This not exported function is used by dozens of others not exported ntoskrnl functions to perform various actions, most of them has `Vsl` prefix:
+To communicate with Secure Kernel ntoskrnl uses special VTL0 to VTL1 hypercalls documented in [Hyper-V Hypervisor Top-Level Functional Specification](https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/reference/tlfs) which are performed by `nt!HvlSwitchToVsmVtl1()` helper function. This not exported function is used by dozens of others not exported ntoskrnl functions to perform various actions, most of them has `Vsl` prefix:
 
 <img src="https://raw.githubusercontent.com/Cr4sh/KernelForge/master/docs/images/vtl_kernel_functions.png" width="720" />
 
